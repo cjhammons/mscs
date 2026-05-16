@@ -78,4 +78,72 @@ Devices:
 - Two subnets can combine 
 - 1.1.0.0/24 and 1.1.1.0/24 = 1.1.0.0/23 
 
+# Router Data Plane
+
+## Role of a Router
+
+- Gateway
+- Forwarding traffic to a destination 
+
+## Forwarding vs Routing 
+
+###  Forwarding: Data Plane
+
+- Direct a packet to an output port/link 
+- Uses a forwarding table 
+
+### Routing: Control plane 
+
+- Computes paths by coordinating with neighbors 
+- Creates forwarding table 
+
+### Packet Forwarding 
+
+- Control plane (route processor) calculates the forwarding table 
+- Data plane - life of packet 
+    - Received at ingress of line card 
+    - lookup destination in forwarding table (determines output port)
+    - send packet over switch fabric to output port 
+    - Line card transmits packet
+
+
+### Longest Prefix Match (LPM)
+
+- find most specific prefix that matches the destination 
+
+Given 2 subnets where prefixes overlap:
+- 11.11.0.0/16 
+- 11.11.11.0/25
+
+Lookup table:
+
+Destination | Port 
+--- | ---
+11.11.0.0/16 | 1 
+11.11.11.0/24 | 2 
+
+Given `Dst` = 11.11.11.11
+
+Using **Longest Prefix Match (LPM)** find most specific prefix that matches the destination, it would route to **Port 2**
+
+
+## Evolution of switching fabrics 
+
+Generation | Architecture Type | Mechanism | main bottleneck/tradeoff
+---        | ---               | ---        | ---
+Gen 1      | Switching via Memory | Input port copies packet to system memory; central CPU resolves lookup and copies packet to output port | CPU & Memory bandwidth: Shared bus transfers and CPU processing limit system parallelism 
+Gen 2 | Switching via bus | Distributed architecture. Forwarding tables are pushed downstream to line cards. Packets skip main memory | Bus contention: shared physical bus allows only one packet transfer at any given time slot 
+Gen 3 | Switching Fabric | Parralel architecture. Uses advanced topologies such as a **crossbar switch** to split data into tiny time slots, connecting multiple inputs to multiple outputs concurrently | Requires specialized hardware
+Gen 4 | Cloud & Virtualized Software | Return to memory-based switching leveraging massive modern parallelization. Optimized for VE | Does not entirely replace Gen3, but dominates Virtualized, cloud-scale, and software-defined networks
+
+
+
+
+
+
+
+
+
+
+
 
