@@ -136,6 +136,109 @@ Gen 2 | Switching via bus | Distributed architecture. Forwarding tables are push
 Gen 3 | Switching Fabric | Parralel architecture. Uses advanced topologies such as a **crossbar switch** to split data into tiny time slots, connecting multiple inputs to multiple outputs concurrently | Requires specialized hardware
 Gen 4 | Cloud & Virtualized Software | Return to memory-based switching leveraging massive modern parallelization. Optimized for VE | Does not entirely replace Gen3, but dominates Virtualized, cloud-scale, and software-defined networks
 
+# Routing (Control Plane)
+
+- Gatewway
+- Forwarding traffic to a destination 
+
+## Key Function of control plane: Calculate forwarding table 
+
+- Routing protocols differ in how they approach each problem:
+    - What info each router knows (entire topology or just its neighbors)
+    - What info each router exchanges (all routes or single route)
+    - What calculation is performed (shortest path or whats locally best) 
+
+## Decentralized control plane 
+
+These are traditionally known as routing protocols 
+
+- Link-state protocol - OSPF (intra-domain)
+- Path-Vector protocol - BGP (Inter-domain)
+
+## Centralized Control Plane
+
+Shifts calculation logic to external software baSED SDN controller. Routers act as pure data plane devices.
+
+# Routing: Link State Protocol 
+
+## Decentralized control plane
+
+Traditionally what you'd know as **Routing Protocols** which answer:
+
+- What info each router knows (e.g. entire topology or just neighbors)
+- What info each router exhanges (e.g. everything it has learned or just what it has selected)
+- What calculation is performed (e.g. shortest path or what's locally best) 
+
+## OSPF - Open Shortest Path First 
+
+- Widely used Link State Protocool in LANs
+- Each router establishes peering with neighbors 
+- Link states are flooded to entire network
+- each router calculates shortest path(s) 
+
+## Link States and Information Exchange 
+
+- connection to other routers - tells who the neighbor is 
+- connection to network with end hosts - tells prefixed reachable 
+
+### Flooding and update process 
+
+- Routers send **Link State Updates (LSUs)** to share their known states with immediate neighbors 
+- Receiving routers store these updates in a local database and flood the new information out of their interfaces to *their* neighbors 
+
+### Network Convergence
+
+- The iterative exchange of updates continues until every router in the network processes an identical, synchronized **Link State Database (LSDB)**
+- At convergence, every individula router has full visibility of the entire network topology
+
+## Shortest Path Calculation (Dijkstra's Algorithm)
+
+Graph representation: the network is viewed as a graph. 
+
+Result: The algorithm yiels a shortest-path tree rooted at *u* that spans every node in the network.
+
+### Algorithm 
+
+Definition: **Dijkstra's Algorithm** is an algorithm for finding the shortest paths between nodes in a weighted graph.
+
+Start at root node *u*, assess immediate next-hop costs, and select lowest-cost neighbor (node *w*)
+
+
+#### Pseudocode
+```
+function Dijkstra(Graph, source):
+
+    for each vertex *v* in *Graph.Vertices*:
+        dist[v] = INFINITY
+        prev[v] = UNDEFINED
+        add v to Q 
+    dist[source] = 0 
+
+    while Q is not empty:
+        u = vertex in Q with minimum dist[u]
+        Q.remove(u)
+
+        for each edge (u, v) in *Graph*:
+            alt = dist[u] + Graph.Distance(u,v)
+            if alt < dist[v]:
+                dist[v] = alt 
+                prev[v] = u 
+
+    return dist[], prev[]
+```
+
+## Forwarding table construction and Network Dynamics
+
+- Populating the Forwarding table: the calculated shortest-path tree indicates the precise next-hop interface for any given destination IP address mapping
+- Network Dynamics: 
+    - Network Changes such as adding a new router, experiencing link/node failure, or introducing a new IP prefix - alter local link state 
+    - The router that detects the change instantly generates a new Link State Update and floods it through the network 
+    - The network undergoes the update process until it reaches a new state of convergence, triggering all routers to re-run Dijkstra's algorithm and update their forwarding tables 
+
+
+
+
+
 
 
 
