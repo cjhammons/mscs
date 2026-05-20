@@ -293,6 +293,60 @@ function Dijkstra(Graph, source):
 5. **Shortest IGP path cost**: Exit this network as quickly as possible 
 6. **Router id**: arbitrary tiebreaker 
 
+# Mapping IP Addresses 
+
+## Allocation
+
+- IANA - Internet Assigned Numbers Authority - global coordination 
+- Regional Registries (RIR) manage local address allocation 
+- ISPs own large blocks and provide them to customers 
+
+## Mapping IP to MAC 
+
+- Problem: Hosts communication on a LAN typically relies on network names (DNS) or IP addresses, but local frame delivery at the Link Layer strictly requires destination MAC addresses.
+- **Address Resolution Protocol (ARP)** bridges this graph
+
+
+### ARP operational flow 
+
+1. OS Table Lookup: the kernel inspects its local ARP table to check for an existing IP-to-MAC mapping 
+2. Broadcast request: if missing, the host issues an ARP request frame with a Broadcast destination address 
+3. Network filtering: switches flood the broadcast frame out all ports. every node processes it, but only the node owning the target IP responds 
+4. Unicast reply: the target node returns its mac address to the sender ,which updates its local ARP table 
+
+## Assigning IP on a LAN 
+
+- **Static Assignment**: manual configuration of the interface via the OS 
+- **Dynamic Assignment (DHCP)**
+    1. Discover: client boradcasts a request to locate available DHCP servers 
+    2. Offer: One or more servers respond with a proposed IP address configuration
+    3. Request: the client selects an offer and requests to lease that specific configuration
+    4. Acknowledge (ACK): the server commits the lease and confimrs the initialization details with the cilent
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
