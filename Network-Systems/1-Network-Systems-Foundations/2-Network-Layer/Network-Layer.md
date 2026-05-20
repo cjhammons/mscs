@@ -235,6 +235,83 @@ function Dijkstra(Graph, source):
     - The router that detects the change instantly generates a new Link State Update and floods it through the network 
     - The network undergoes the update process until it reaches a new state of convergence, triggering all routers to re-run Dijkstra's algorithm and update their forwarding tables 
 
+# Routing: Path Vector Protocol 
+
+
+## The Internet 
+
+- **The Internet** is a collection of  many inter-connected networks called **Autonomous Systems**.
+- **Autonomous Systems** are a network administered by a single enterprise or commercial entity.
+- **Border Gateway Protocol**: is a protocol that provides a mechanism for distinct Autonomous systems to communicate and exchange routing information across network boundaries.
+
+## BGP Process 
+
+### Algorithm 
+
+1. Establish peering sessions with direct neighbors
+2.  Process route updates, failures, or configuation shifts 
+3. Update the internal routing table 
+4. Compute the locally optimal route for an IP prefix 
+5. Advertise changes or new path choices to neighboring peers 
+
+### Definitions 
+
+- **Route**: A path mapped to a specific destination IP prefix (e.g. 1.2.3.0/24)
+- **Path**: A sequence of autonomous system numbers (ASNs) used to track network hops
+
+## Handling Network Dynamics
+
+- **Link Failures**: If a link drops, the detecting AS updates its local topology table and purges the invalid entry 
+- **Route Withdrawals**: An explicit message type sent to neighbors to unannounce or revoke previously a previously advertised route 
+- **Route Updates**: sent alongside or following a withdrawal if an alternative path is chosen locally, ensuring neighbors converge on a new path 
+    - *Split Horizon Rule*: An AS will not advertise a path back to the specific neighbor it originally learned that path from 
+
+
+## Internal vs External BGP boundaris 
+
+- Network abstraction vs reality: Large networks consist of many internal routers rather than a single logical node. 
+- eBGP (external BGP): used to exchange routing information between edge routers of *different* networks 
+- iBGP (internal BGP): used to distribute the externally learned routing information to all internal routers within the same autonomous system 
+- prefix injection: how an AS originates a prefix into BGP 
+    - dynamicaly via redistributionfrom Interio Gateway Protocols like OSPF 
+    - statically via manual router configurations 
+
+
+## Inter-domain business relations and policies 
+
+- Provider: paid money to transfer traffic 
+- Customer: pays money to a provider to have its traffic carried 
+- Peer: financially neutral arrangement where two ASes connect to each other and will send traffic through each other 
+- BGP Policies to control what is being announced. e.g. a provider will block non-lucrative transit traffic 
+
+## Best Path Calculation Algorithm 
+
+1. **Local Preference**: numerical value assigned by routing policy
+2. **AS Path Length**: number of AS-level hops in the path 
+3. **Multiple exit discriminator (MED)**: allows one AS to specify that one exit point preferred
+4. **eBGP over iBGP**: Learned trhough external neighbor over internal 
+5. **Shortest IGP path cost**: Exit this network as quickly as possible 
+6. **Router id**: arbitrary tiebreaker 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
