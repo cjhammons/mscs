@@ -114,4 +114,53 @@ If data is lost, the sender must resend it. There are two primary signals that T
 - Sender limits amount of unACKed "in flight" data to received `rwnd`
 
 
+# TCP Connection Establishment
+
+## Necessity of State Management 
+
+The mechanisms of SEQ Numbers, ACK numbers, Retransmission, and Flow Control all require state.
+
+### Components of TCP State 
+
+- **Buffers**: Send buffers (holing data until ACKed) and receive buffers (holding out-of-order data)
+- **Variables**: ACK numbers, estimated RTT, and receive windows 
+- **Resource Contraint**: Since memory and processing resources are finite, the system must explicitly agree to establish a connection before allocating this state 
+
+## Concept of Connections Establishment 
+
+- TCP is connection oriented 
+- Each process must agree to form a connection 
+- **Three way handshake**
+    - A -> B: "I'd like to connect"
+    - B -> A: "Sounds good to me"
+    - A -> B: "Thanks, connection established" 
+
+## TCP Flags Involved 
+
+- **SYN (Synchronize)**: Indicates Synchronization of sequence numbers; marks start of a connection 
+- **ACK (Acknowledgement)**: Indicates that the ACK Number field is valid 
+
+## Three Way Handshake Step-by-Step 
+
+### Step 1: Host A sends SYN 
+
+- Host A selects an initial Sequence Number (e.g. seq = 1000)
+- Sets the SYN Flag 
+- Packet: [SYN, seq=1000]
+
+### Step 2: Host B sends SYN-ACK 
+
+- Host B creates state for connection 
+- ACKs Host A's SYN: Sets ACK flag and ACK number to 1001 (next expected byte) 
+- Synchronizes its own sequence: Selects its own initial Sequence Number (e.g. seq = 600) and sets the SYN flag 
+- Packet: [SYN, ACK, seq=600, ack=1001]
+
+### Step 3: Host A sends an ACK 
+
+- Host A acknowledges Host B's SYN 
+- Sets ACK flag and ACK number to 601 (next expected byte from B) 
+- Packet: [ACK, ack=601]
+
+
+
 
