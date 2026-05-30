@@ -162,5 +162,91 @@ The mechanisms of SEQ Numbers, ACK numbers, Retransmission, and Flow Control all
 - Packet: [ACK, ack=601]
 
 
+# Congestion Control 
+
+Congestion happens when the send rate to a link exceeds the receive rate (transmission capacity)
+
+## Congestion Collapse 
+
+- When nearing capacity, goodput decreases rapidly 
+- Buffers get full, but sending keeps overloading them, so more and more packets getting dropped and re-transmitted 
+
+## Goals of Congestion Control 
+
+- **Eficiancy**: full bandwidth of network is utilzed 
+- **Faireness**: Each active flow receives an equal share of the available bandwidth 
+- **Ideal Operating Point:** The intersection of the efficiency and fairness lines, where the link is fully used but no single flow dominates 
+
+## Resource Allocation Approaches 
+
+1. **Reservation**: Reserving specific bandwidth on each router along the path before data transfer begins 
+2. **Feedback and Adjust**: Senders detect congestion implicitly and adjust their rates dynamically 
+    - TCP's approach: TCP uses Feedback and Adjust 
+    - Senders increase their rate until congestion is detected, then decreases it 
+    - Detection is usually implicit (via packet loss, timeouts, or duplicate ACKs)
+    - uses a window-based mechanism to control the flow 
+
+# TCP Congestion Control 
+
+## Feedback Signals TCP uses to detect Congestion 
+
+Signal | Description 
+--- | ---
+Packet Loss (timeout) | When a sender doesn't receive an ACK within the estimated RTT, it assumes the packet was dropped due to congestion 
+Duplicate ACKs | Receiving multiple ACKs for the same sequence number suggests a packet was lost (out of order packets trigger duplicate ACKs) 
+Packet Delay | Increasing RTT samples indicate growing queue lenghts in router buffers 
+
+## window-based Adjustment 
+
+TCP controls sending rate through a **Congestion Window (cwnd)**
+
+```
+lastByteSent - lastByteAcked <= cwnd 
+```
+
+Window Type | Purpose | Location 
+--- | --- | ---
+Congestion Window (cwnd) | Limits sending based on network conditions | Internal state on sender 
+Receive Window (rwnd) | Limits sending based on receiver buffer capacity | Explicit field in TCP header 
+
+**Actual Sending Limit**: `min(cwnd, rwnd)` -sender must respect both contraints 
+
+## AIMD: Aditive Increase, Multiplicative Decrease 
+
+TCP uses AIMD to adjust congestion window 
+
+### Additive increase 
+- increase sending rate by 1 max segment size every RTT until loss detected 
+- Gradually probes for available bandwidth 
+- linear growth pattern 
+
+### Multiplicative Decrease
+
+- decrease sending rate by some Multiplicative factor (e.g. by half) when loss detected 
+- rapid correction prevents prolonged congestion 
+
+### Sawtooth Pattern 
+
+over time, this method creates a sawtooth pattern as cwnd increases linearlly and drops rapidly 
+
+## Why AIMD works 
+
+- increase is linear 
+- decrease is propotional to send rate, so converge towards a fair line 
+- mathematically provben to optimize network-wide flow rates 
+
+## TCP Slow Start 
+
+- problem: additive increase is too slow 
+- Increase cwnd every ACK instead of every RTT 
+- Despite the name slow start is actually fast - it ramps up quickly to find available bandwidth before switching to the more conservative additive increase mode :window-based
+
+
+
+
+
+
+
+
 
 
