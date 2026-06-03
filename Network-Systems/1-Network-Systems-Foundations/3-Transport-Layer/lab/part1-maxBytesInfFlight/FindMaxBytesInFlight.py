@@ -74,11 +74,48 @@ def isFlowEgress(p, f):
 # Assume - only one TCP session (i.e., one pair of IP address and TCP ports)
 #        - the pcap starts with the 3 way handshake as the first 3 packets
 def findMaxBytesInFlight(pcapfile):   
-   maxBytesInFlight = 0 
+    maxBytesInFlight = 0 
 
-   # YOUR CODE HERE
+    # YOUR CODE HERE
 
-   return maxBytesInFlight
+    packets = rdpcap(pcapfile)
+
+    flow_info = readHandShake(packets)
+
+    highest_seq = flow_info.startSeqNum
+    highest_ack = flow_info.ackNumReceived
+    
+    for packet in packets: 
+      if TCP not in packet:
+         continue
+        
+      tcp_layer = packet[TCP]
+
+      if isFlowEgress(packet, flow_info): # packet from server to client
+         # update highest seq number for server data
+         if Raw in packet or tcp_layer.flags & 0x02: # has data or SYN 
+            payload_len = get_payload_len(packet) 
+
+            if tcp_layer.flags & 0x02: # SYN flag 
+               payload_len += 1 
+            if tcp_layer.flags & 0x01: #FIN Flag 
+               payload_len += 1
+
+            if payload_len > 0:
+               seq_end = tcp_layer.seq + payload_len
+               if seq_end > highest_seq:
+                   highest_seq = seq_end
+      else:
+         # packet from client to server - update highest ACK received
+         if tcp_layer.ack > highest_ack:
+             highest_ack = tcp_layer.ack
+
+      bytes_in_flight = highest_seq - highest_ack
+      if bytes_in_flight > maxBytesInFlight:
+         maxBytesInFlight = bytes_in_flight
+
+
+    return maxBytesInFlight
 
 def get_payload_len(p):
    payload_len = 0 
