@@ -294,4 +294,313 @@ if __name__ == '__main__':
     client_program()
 ```
 
+# Application Protocol: HTTP 
+
+**Hypertext Transfer Protocal**
+
+## Introduction 
+
+Problem: how do processes encode data 
+
+An application layer protocol defines:
+- Message syntax
+- Types of messages exchanged 
+- Message semantics: meaning of information in fields 
+
+## Syntax: Data encoding and presentation 
+
+- Requirement: Receiver needs to be able to execute the same message as what the transmitter sent 
+- Consideration: Debuggability vs bandwidth vs processing power 
+
+## Taxonomy of data representation
+
+### Data Types 
+
+Type |	Examples |	Concerns
+--- | --- | ---
+Base Types |	Integers, Booleans |	Number of bits (16, 32, 64), byte order (Big-endian vs. Little-endian)
+Flat Types |	Arrays, Structures |	Padding, length definition, alignment boundaries
+Complex Types |	Trees, Linked Lists |	Serialization/Flattening for transmission across network
+
+### Conversion Strategy 
+
+#### Canonical Intermediate form 
+
+- sender converts its internal representation to some agreed upon format 
+- receiveer converts aggreed-upon format to its own representation 
+- both sides perform conversion 
+
+#### Receier Makes Right 
+
+- Sender transmits data in its internal representation 
+- includes information about representation
+- receiver converts from the sender's representation to its own representation (if needed)
+- works well if assumption os a homogeneous infrastructure 
+
+### Tagging 
+
+- Untagged: Agree on type, length, and location of data 
+- Tagged: Include in message tags about data (e.g. type and length) 
+
+## HTTP Fundamentals 
+
+- Web's applicaiton-layer protocol 
+- Client / Server exchange Web Objects 
+    - htlm, jpeg, audio 
+- Stateless - server doesn't retain information about past client requests 
+
+### URL Structure 
+
+Example: http://www.example.com/path/to/file 
+- `http:` protocol 
+- `www.example.com`: hostname 
+- `/path/to/file`: path 
+
+### Message format 
+
+```
+START_LINE <CRLF>
+MESSAGE_HEADER <CRLF>
+<CRLF>
+MESSAGE_BODY <CRLF>
+```
+
+
+Field |	Request	Response
+--- | ---
+Start Line	| Request type + path + version	Version + status code
+Message Header |	Various info about request	Various info about response (Content-Type, etc.)
+Blank Line |	Separates header from body	Separates header from body
+Message Body |	Requested content or uploaded data	Web object (HTML, image, etc.)
+
+### Message Types 
+
+Method |	Description
+--- | ---
+GET	|Retrieve document identified in URL
+POST  |	Send/supply information to server
+PUT	| Store document under specified URL
+DELETE |	Delete specified URL
+HEAD	| Retrieve metainformation (no body)
+OPTIONS |	Request info about available options
+TRACE |	Loopback request message
+CONNECT |	For use by proxies
+
+## Data Formats in HTTP 
+
+I skipped this part because i am already familiar with html and json 
+
+## HTTP Versions 
+
+
+Version	Main | Innovation	Impact
+--- | ---
+HTTP/1.0 |	First major version	New TCP connection per request (slow)
+HTTP/1.1 |	Persistent Connections	Reuse TCP connection for multiple requests (avoids 3-way handshake, slow start)
+HTTP/2.0 |	Multiplexed Requests	Multiple requests/responses in parallel over one connection
+HTTP/3.0 |	QUIC instead of TCP	Reduced latency, improved reliability over UDP-based transport
+
+# Application Protocol: gRPC
+
+Problem: the application layer needs to define how processes communicate 
+
+## Remote Procedure Call (RPC) Fundamentals 
+
+### Concept 
+
+- Extends the idea of a local procedure call to a remote machine.
+- Defined framework for data encoding, and communication protocol 
+
+EX: 
+
+Say a server has a function: 
+
+```
+int add (int x, inty) {
+    return x + y 
+} 
+```
+
+And a client wants to call that function like so: 
+```
+Z = add(11,22)
+```
+
+- the `add` function is not present on the client, they are pinging the server and having the logic performed there.
+- Client-Side stub marshals the parameters and sends them. 
+- Server-side stub unmarshals them, calls the actual function, encodes the result, and sends it back 
+- The application developer calls a function as if it were local; the network details are hidden 
+
+## Modern Webservices arechitecture 
+
+- Services are partitioned into smaller services, each with APIs 
+    - Example: rideshare having discrete microservices for ride hailing, payment, account management, etc 
+- Could use REST (with JSON), but could also use gRPC as the protocol 
+
+## gRPC - Modern Implementation 
+
+- Based on protobufs - binary format to serialize data 
+- Leverages HTTP 2 (persistent and pipelined messages 
+- More efficient than JSON. Example comparison:
+
+**JSON: 55 bytes** 
+```
+{
+    "age": 35
+    "first_name": "Stephane",
+    "last_name": "Maarek"
+}
+```
+
+Same data in a protocol buffer: 20 bytes 
+```
+message Person {
+    int32 age = 1;
+    string first_name = 2;
+    string last_name = 3;
+}
+```
+
+## HTTP vs gRPC 
+
+Feature | HTTP/REST (JSON) | gRPC (Protobuf) 
+--- | --- | ---
+Data Format | Text-based, human-readable | Binary, compact 
+Transport | HTTP/1.1 or HTTP/2 | HTTP/2 
+Serialization | Manual or JSON library | Automatic via protobuf compiler 
+Use Case | Public APIs, Web Browsers | Internal microservices, high performance 
+Debugging | Easy (readable text) | Requires tools to inspect binary 
+
+## gRPC Workflow 
+
+### 1. Define `.proto` File 
+
+- Specifies the service interface (functions, methods)
+- Defines message structure (data types) 
+
+Example: 
+
+```
+service Echo {
+    rpc echo(Message) returns (Message) {}
+}
+
+message Message {
+    string message = 1;
+}
+```
+
+### 2. Compiler (`protoc`)
+
+- Protocol buffer compiler generates languate-specific files (stubs) containing serialization/deserialization code 
+
+### 3. Implement Server
+
+- Import generated libraries
+- Defines message structures (data types)
+
+### 4. Implement client 
+
+- Import generated libraries 
+- Create a client stub 
+- Call the remote functions directly via the stub 
+
+## Walkthrough Example: Echo Client / Server 
+
+### `.proto` definition 
+
+`simple.proto`
+```
+syntax = "proto3";
+
+service Echo {
+  rpc echo(Message) returns (Message) {}
+}
+message Message {
+  string text = 1;
+}
+```
+
+### Compile 
+
+Now run:
+```bash
+python -m grpc_tools.protoc \
+    --proto_path=. \
+    ./simple.proto \
+    --python_out=. \
+    --grpc_python_out=.
+```
+
+Which generates files `simple_pb2_grpc.py` and `simple_pb2.py`
+
+
+### Implement Server 
+
+```python 
+import grpc 
+from concurrent import futures 
+import simple_pb2_grpc 
+import simple_pb2 
+
+# Create class for each service, in this case `EchoServicer`
+class EchoService(simple_pb2_grpc.EchoServicer):
+
+    def __init__(self, *args, **kwargs):
+        pass 
+    
+    # Implement each function
+    def echo(self, request, context):
+        # get string from incoming request 
+        mess = request.message 
+        print("Received: " + mess)
+
+        retval = simple_pb2.Message()
+        retval.message = mess 
+
+        return retval 
+
+# Configure and start the server 
+def serve():
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    simple_pb2_grpc.add_EchoServicer_to_server(EchoService(), server)
+    server.add_insecure_port('[::]:50051')
+    server.start()
+    server.wait_for_termination()
+```
+
+### Implement Client 
+
+```python
+import grpc 
+import simple_pb2_grpc 
+import simple_pb2 
+
+def run():
+    channel = grpc.insecure_channel("localhost:50051")
+    echosstub = simple_pb2_grpc.EchoStub(channel)
+
+    param = simple_pb2.Message(message="HELLO")
+    print(f"PARAM: " + str(param))
+
+    retval = echostub.echo(param)
+    print("RETVAL: " + str(retval))
+```
+
+## Advanced API Patterns in gRPC 
+
+1. **Unary**: Standard request/response (see above example)
+2. **Server Streaming**: Client sends one request, server sends a stream of responses 
+3. **Client Streaming**: client sends a stream of requests, server responds once with a summary 
+4. **Bidirectional Streaming**: Both client and server send streams of messages independently 
+
+
+
+
+
+
+
+
+
+
 
