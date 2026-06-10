@@ -180,7 +180,7 @@ Problem: programming
 - Link, Network, and transport protocols are concepts. Operating system network stack is their implementation 
 - How do we write programs to interface to this network stack?
 
-## Socket Funcamentals 
+## Socket Fundamentals 
 
 A socket is an abstract representation for the local endpoint of a network communication path 
 
