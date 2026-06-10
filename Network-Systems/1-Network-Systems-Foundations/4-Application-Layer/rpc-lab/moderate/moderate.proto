@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+service Eric {
+ rpc ericFunction(FunctionParameter) returns (FunctionReturnVal) {}
+
+}
+
+service MyFunctions {
+ rpc myfunction1(FunctionParameter) returns (FunctionReturnVal) {}
+ rpc myfunction2(FunctionParameter) returns (FunctionReturnVal) {}
+
+}
+
+message FunctionParameter {
+ string strparam = 1;
+ int32 numparam = 2;
+}
+
+message FunctionReturnVal { 
+    int32 code = 1;
+} 
